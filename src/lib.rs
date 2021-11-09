@@ -1,3 +1,6 @@
+mod mock;
+mod tests;
+
 use frame_support::{
     pallet_prelude::*,
     sp_runtime::traits::{
