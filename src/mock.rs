@@ -158,7 +158,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
     orml_tokens::GenesisConfig::<Runtime> {
         balances: vec![
-            (ALICE, CURRENCY_TEST1, 1_000_000 * UNIT),
+            (ALICE, CURRENCY_TEST1, 1_000_000_000_000 * UNIT),
             (BOB, CurrencyId::Token(Test2), 1_000_000 * UNIT),
         ],
     }

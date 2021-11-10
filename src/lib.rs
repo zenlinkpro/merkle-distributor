@@ -4,7 +4,7 @@ mod tests;
 use frame_support::{
     pallet_prelude::*,
     sp_runtime::traits::{
-        AccountIdConversion, AtLeast32BitUnsigned, Keccak256, One, Saturating, StaticLookup,
+        AccountIdConversion, AtLeast32BitUnsigned, Keccak256, One, Saturating, StaticLookup, Zero,
     },
     sp_std::{convert::TryInto, vec::Vec},
     transactional, PalletId,
@@ -39,6 +39,7 @@ pub struct MerkleMetadata<Balance, CurrencyId, AccountId, BoundString> {
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
+    use std::convert::TryFrom;
 
     #[pallet::config]
     pub trait Config: frame_system::Config + TypeInfo {
@@ -47,9 +48,16 @@ pub mod pallet {
         /// The currency ID type
         type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo;
 
-        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId>
-            + MultiReservableCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId>
-            + MultiLockableCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId>;
+        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId, Balance = Self::Balance>
+            + MultiReservableCurrency<
+                AccountIdOf<Self>,
+                CurrencyId = Self::CurrencyId,
+                Balance = Self::Balance,
+            > + MultiLockableCurrency<
+                AccountIdOf<Self>,
+                CurrencyId = Self::CurrencyId,
+                Balance = Self::Balance,
+            >;
 
         /// The balance type
         type Balance: Parameter
@@ -115,6 +123,7 @@ pub mod pallet {
         BadDescription,
         InvalidMerkleDistributorId,
         MerkleVerifyFailed,
+        Claimed,
     }
 
     #[pallet::pallet]
@@ -142,7 +151,6 @@ pub mod pallet {
                 T::PalletId::get().into_sub_account(merkle_dispatcher_id);
 
             let description: BoundedVec<u8, T::StringLimit> = description
-                .clone()
                 .try_into()
                 .map_err(|_| Error::<T>::BadDescription)?;
 
@@ -176,6 +184,11 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_signed(origin)?;
 
+            ensure!(
+                !Self::is_claimed(merkle_distributor_id, index),
+                Error::<T>::Claimed
+            );
+
             let owner = T::Lookup::lookup(account)?;
 
             let mut index_data = Vec::<u8>::from(index.to_be_bytes());
@@ -188,12 +201,7 @@ pub mod pallet {
 
             if_std! { println!("leaf -- {:#?}", node);}
 
-            let merkle: MerkleMetadata<
-                T::Balance,
-                T::CurrencyId,
-                T::AccountId,
-                BoundedVec<u8, T::StringLimit>,
-            > = Self::get_merkle_distributor(merkle_distributor_id)
+            let merkle = Self::get_merkle_distributor(merkle_distributor_id)
                 .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
 
             ensure!(
@@ -201,9 +209,41 @@ pub mod pallet {
                 Error::<T>::MerkleVerifyFailed
             );
 
+            T::MultiCurrency::transfer(
+                merkle.distribute_currency,
+                &merkle.distribute_holder,
+                &owner,
+                T::Balance::try_from(amount).unwrap_or_else(|_| Zero::zero()),
+            )?;
+
             Self::set_claimed(merkle_distributor_id, index);
 
             Self::deposit_event(Event::<T>::Claim(merkle_distributor_id, owner, amount));
+            Ok(())
+        }
+
+        #[pallet::weight((
+        0,
+        DispatchClass::Normal,
+        Pays::No
+        ))]
+        #[transactional]
+        pub fn charge(
+            origin: OriginFor<T>,
+            merkle_distributor_id: T::MerkleDistributorId,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+
+            let merkle = Self::get_merkle_distributor(merkle_distributor_id)
+                .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
+
+            T::MultiCurrency::transfer(
+                merkle.distribute_currency,
+                &who,
+                &merkle.distribute_holder,
+                merkle.distribute_amount,
+            )?;
+
             Ok(())
         }
     }

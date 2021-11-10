@@ -3,6 +3,7 @@
 use crate::mock::*;
 use frame_support::assert_ok;
 use hex_literal::hex;
+use orml_traits::MultiCurrency;
 use sp_core::H256;
 
 #[test]
@@ -15,8 +16,10 @@ fn one_level_merkel_tree_proof_should_work() {
             )),
             Vec::from("test"),
             CURRENCY_TEST1,
-            100 * UNIT,
+            1_000_000_000 * UNIT,
         ));
+
+        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
 
         let mut proof = Vec::<H256>::new();
         proof.push(H256::from(&hex!(
@@ -30,6 +33,11 @@ fn one_level_merkel_tree_proof_should_work() {
             10_000_000_000_000_000_000,
             proof
         ));
+
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &BOB),
+            10_000_000_000_000_000_000
+        );
     })
 }
 
@@ -69,7 +77,7 @@ fn set_claimed_should_work() {
 }
 
 #[test]
-fn set_claimed_should_not_work() {
+fn no_set_claimed_should_not_work() {
     new_test_ext().execute_with(|| {
         assert_ok!(MdPallet::create_merkle_dispatcher(
             Origin::root(),
