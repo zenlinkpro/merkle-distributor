@@ -122,6 +122,7 @@ impl Config for Runtime {
     type MerkleDistributorId = u32;
     type PalletId = MdPalletId;
     type StringLimit = StringLimit;
+    type MultiCurrency = Tokens;
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;

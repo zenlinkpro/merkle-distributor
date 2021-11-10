@@ -10,6 +10,7 @@ use frame_support::{
     transactional, PalletId,
 };
 use frame_system::pallet_prelude::*;
+use orml_traits::{MultiCurrency, MultiLockableCurrency, MultiReservableCurrency};
 
 use pallet::*;
 
@@ -43,6 +44,13 @@ pub mod pallet {
     pub trait Config: frame_system::Config + TypeInfo {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
+        /// The currency ID type
+        type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo;
+
+        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId>
+            + MultiReservableCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId>
+            + MultiLockableCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId>;
+
         /// The balance type
         type Balance: Parameter
             + Member
@@ -51,9 +59,6 @@ pub mod pallet {
             + Copy
             + MaybeSerializeDeserialize
             + MaxEncodedLen;
-
-        /// The currency ID type
-        type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo;
 
         /// Identifier for the class of merkle dispatcher.
         type MerkleDistributorId: Member
@@ -76,7 +81,7 @@ pub mod pallet {
     #[pallet::getter(fn get_merkle_distributor)]
     pub(super) type MerkleDistributorMetadata<T: Config> = StorageMap<
         _,
-        Blake2_128Concat,
+        Twox64Concat,
         T::MerkleDistributorId,
         MerkleMetadata<T::Balance, T::CurrencyId, T::AccountId, BoundedVec<u8, T::StringLimit>>,
     >;
@@ -85,6 +90,18 @@ pub mod pallet {
     #[pallet::getter(fn merkle_dispatcher_id)]
     pub(crate) type NextMerkleDistributorId<T: Config> =
         StorageValue<_, T::MerkleDistributorId, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn cliamed_bitmap)]
+    pub(crate) type ClaimedBitMap<T: Config> = StorageDoubleMap<
+        _,
+        Twox64Concat,
+        T::MerkleDistributorId,
+        Twox64Concat,
+        u32,
+        u32,
+        ValueQuery,
+    >;
 
     #[pallet::event]
     #[pallet::generate_deposit(pub (crate) fn deposit_event)]
@@ -159,12 +176,12 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_signed(origin)?;
 
-            let dest = T::Lookup::lookup(account)?;
+            let owner = T::Lookup::lookup(account)?;
 
             let mut index_data = Vec::<u8>::from(index.to_be_bytes());
             let mut balance_data = Vec::<u8>::from(amount.to_be_bytes());
 
-            index_data.append(&mut dest.encode());
+            index_data.append(&mut owner.encode());
             index_data.append(&mut balance_data);
 
             let node: H256 = Keccak256::hash(&index_data);
@@ -184,7 +201,9 @@ pub mod pallet {
                 Error::<T>::MerkleVerifyFailed
             );
 
-            Self::deposit_event(Event::<T>::Claim(merkle_distributor_id, dest, amount));
+            Self::set_claimed(merkle_distributor_id, index);
+
+            Self::deposit_event(Event::<T>::Claim(merkle_distributor_id, owner, amount));
             Ok(())
         }
     }
@@ -222,9 +241,33 @@ pub mod pallet {
                 }
             }
             if_std! { println!("merkle_proof oversee {:#?}", merkle_proof); }
-            if_std! { println!("{:#?}", computed_hash); }
-            if_std! { println!("{:#?}", merkle_root); }
+            if_std! { println!("computed_hash {:#?}", computed_hash); }
+            if_std! { println!("merkle_root {:#?}", merkle_root); }
             computed_hash == merkle_root
+        }
+
+        pub(crate) fn set_claimed(merkle_distributor_id: T::MerkleDistributorId, index: u32) {
+            let claimed_word_index: u32 = index / 32;
+            let claimed_bit_index = index % 32;
+
+            let old_value = Self::cliamed_bitmap(merkle_distributor_id, claimed_word_index);
+            ClaimedBitMap::<T>::insert(
+                merkle_distributor_id,
+                claimed_word_index,
+                old_value | (1 << claimed_bit_index),
+            );
+        }
+
+        pub(crate) fn is_claimed(
+            merkle_distributor_id: T::MerkleDistributorId,
+            index: u32,
+        ) -> bool {
+            let claimed_word_index: u32 = index / 32;
+            let claimed_bit_index = index % 32;
+
+            let claimed_word = Self::cliamed_bitmap(merkle_distributor_id, claimed_word_index);
+            let mask: u32 = 1 << claimed_bit_index;
+            claimed_word & mask == mask
         }
     }
 }
