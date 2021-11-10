@@ -5,10 +5,14 @@ use super::*;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 
-use crate::mock::TokenSymbol::{Test1, Test2};
+use crate::mock::TokenSymbol::*;
 use frame_support::{construct_runtime, parameter_types, traits::Contains};
 use orml_traits::parameter_type_with_key;
-use sp_runtime::{testing::Header, traits::IdentityLookup};
+use sp_runtime::{
+    testing::Header,
+    traits::{IdentifyAccount, IdentityLookup, Verify},
+    AccountId32, MultiSignature,
+};
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -42,12 +46,16 @@ parameter_type_with_key! {
     };
 }
 
+pub(crate) const CURRENCY_TEST1: CurrencyId = CurrencyId::Token(TokenSymbol::Test1);
+
 type Balance = u128;
 
-pub type AccountId = u128;
+pub type Signature = MultiSignature;
+pub type AccountPublic = <Signature as Verify>::Signer;
+pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
 
-pub const ALICE: AccountId = 1;
-pub const BOB: AccountId = 2;
+pub const ALICE: AccountId = AccountId32::new([0u8; 32]);
+pub const BOB: AccountId = AccountId32::new([1u8; 32]);
 
 impl frame_system::Config for Runtime {
     type Origin = Origin;
@@ -144,16 +152,16 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     pallet_balances::GenesisConfig::<Runtime> {
         balances: vec![(ALICE, 1_000_000 * UNIT), (BOB, 1_000_000 * UNIT)],
     }
-        .assimilate_storage(&mut t)
-        .unwrap();
+    .assimilate_storage(&mut t)
+    .unwrap();
 
     orml_tokens::GenesisConfig::<Runtime> {
         balances: vec![
-            (ALICE, CurrencyId::Token(Test1), 1_000_000 * UNIT),
+            (ALICE, CURRENCY_TEST1, 1_000_000 * UNIT),
             (BOB, CurrencyId::Token(Test2), 1_000_000 * UNIT),
         ],
     }
-        .assimilate_storage(&mut t)
-        .unwrap();
+    .assimilate_storage(&mut t)
+    .unwrap();
     t.into()
 }

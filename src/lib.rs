@@ -6,12 +6,14 @@ use frame_support::{
     sp_runtime::traits::{
         AccountIdConversion, AtLeast32BitUnsigned, Keccak256, One, Saturating, StaticLookup,
     },
-    sp_std::vec::Vec,
+    sp_std::{convert::TryInto, vec::Vec},
     transactional, PalletId,
 };
 use frame_system::pallet_prelude::*;
 
 use pallet::*;
+
+use sp_std::if_std;
 
 use scale_info::TypeInfo;
 use sp_core::{Hasher, H256};
@@ -36,7 +38,6 @@ pub struct MerkleMetadata<Balance, CurrencyId, AccountId, BoundString> {
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use std::convert::TryInto;
 
     #[pallet::config]
     pub trait Config: frame_system::Config + TypeInfo {
@@ -88,7 +89,7 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub (crate) fn deposit_event)]
     pub enum Event<T: Config> {
-        Claim(T::MerkleDistributorId, T::AccountId, T::Balance),
+        Claim(T::MerkleDistributorId, T::AccountId, u128),
     }
 
     #[pallet::error]
@@ -153,20 +154,22 @@ pub mod pallet {
             merkle_distributor_id: T::MerkleDistributorId,
             index: u32,
             account: <T::Lookup as StaticLookup>::Source,
-            amount: T::Balance,
+            amount: u128,
             merkle_proof: Vec<H256>,
         ) -> DispatchResult {
             ensure_signed(origin)?;
 
-            let account_id = T::Lookup::lookup(account)?;
-            let mut index_data = index.encode();
-            let mut account_data = account_id.encode();
-            let mut balance_data = amount.encode();
+            let dest = T::Lookup::lookup(account)?;
 
-            index_data.append(&mut account_data);
+            let mut index_data = Vec::<u8>::from(index.to_be_bytes());
+            let mut balance_data = Vec::<u8>::from(amount.to_be_bytes());
+
+            index_data.append(&mut dest.encode());
             index_data.append(&mut balance_data);
 
             let node: H256 = Keccak256::hash(&index_data);
+
+            if_std! { println!("leaf -- {:#?}", node);}
 
             let merkle: MerkleMetadata<
                 T::Balance,
@@ -181,7 +184,7 @@ pub mod pallet {
                 Error::<T>::MerkleVerifyFailed
             );
 
-            Self::deposit_event(Event::<T>::Claim(merkle_distributor_id, account_id, amount));
+            Self::deposit_event(Event::<T>::Claim(merkle_distributor_id, dest, amount));
             Ok(())
         }
     }
@@ -202,7 +205,9 @@ pub mod pallet {
         ) -> bool {
             let mut computed_hash = leaf;
 
-            for i in 0..(merkle_proof.len() - 1) {
+            for i in 0..(merkle_proof.len()) {
+                if_std! { println!("merkle_proof i:{:#?} -- {:#?}", i,  merkle_proof[i]); }
+
                 let proof_element = merkle_proof[i];
                 if computed_hash <= proof_element {
                     // Hash(current computed hash + current element of the proof)
@@ -216,6 +221,9 @@ pub mod pallet {
                     computed_hash = Keccak256::hash(&pack);
                 }
             }
+            if_std! { println!("merkle_proof oversee {:#?}", merkle_proof); }
+            if_std! { println!("{:#?}", computed_hash); }
+            if_std! { println!("{:#?}", merkle_root); }
             computed_hash == merkle_root
         }
     }
