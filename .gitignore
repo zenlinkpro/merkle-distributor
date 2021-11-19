@@ -1,4 +1,4 @@
 /target
 /.idea
 Cargo.lock
-./script/merkle-distributor/node_modules
+./script/merkle-distributor/node_modules/
