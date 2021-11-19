@@ -10,14 +10,12 @@ use frame_support::{
     transactional, PalletId,
 };
 use frame_system::pallet_prelude::*;
+use scale_info::TypeInfo;
+use sp_core::{Hasher, H256};
+
 use orml_traits::{MultiCurrency, MultiLockableCurrency, MultiReservableCurrency};
 
 use pallet::*;
-
-use sp_std::if_std;
-
-use scale_info::TypeInfo;
-use sp_core::{Hasher, H256};
 
 #[allow(type_alias_bounds)]
 type AccountIdOf<T: Config> = <T as frame_system::Config>::AccountId;
@@ -121,9 +119,13 @@ pub mod pallet {
     pub enum Error<T> {
         /// Invalid metadata given.
         BadDescription,
+        /// The id is not exist.
         InvalidMerkleDistributorId,
+        /// The proof is invalid
         MerkleVerifyFailed,
+        /// The reward is already distributed.
         Claimed,
+        /// The reward is already charged.
         Charged,
     }
 
@@ -132,13 +134,21 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// Create a dispatcher
+        /// `create_merkle_dispatcher` will create a merkle distributor,
+        ///  which allow specified users claim asset.
+        ///
+        /// The dispatch origin for this call must be `Signed` by root.
+        ///
+        /// - `merkle_root`: The root of a merkle tree.
+        /// - `description`: About the purpose of this distribution.
+        /// - `distribute_currency`: The id of currency about this distribution.
+        /// - `distribute_amount`: The total currency amount of this distribution.
         #[pallet::weight((
         0,
         DispatchClass::Normal,
         Pays::No
         ))]
-        pub fn create_merkle_dispatcher(
+        pub fn create_merkle_distributor(
             origin: OriginFor<T>,
             merkle_root: H256,
             description: Vec<u8>,
@@ -169,6 +179,12 @@ pub mod pallet {
             Ok(())
         }
 
+        /// `claim` Claim rewards through user information and merkle proof.
+        ///
+        /// - `merkle_distributor_id`: ID of a merkle distributor.
+        /// - `index`: The index of the merkle tree leaf.
+        /// - `account`: The owner's account of merkle proof.
+        /// - `merkle_proof`: The hashes with merkle tree leaf can get merkle tree root.
         #[pallet::weight((
         0,
         DispatchClass::Normal,
@@ -199,9 +215,7 @@ pub mod pallet {
             index_data.append(&mut balance_data);
 
             let node: H256 = Keccak256::hash(&index_data);
-
-            if_std! { println!("leaf -- {:#?}", node);}
-
+            
             let merkle = Self::get_merkle_distributor(merkle_distributor_id)
                 .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
 
@@ -223,6 +237,9 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Charge currency to the account of merkle distributor
+        ///
+        /// `merkle_distributor_id`: ID of a merkle distributor.
         #[pallet::weight((
         0,
         DispatchClass::Normal,
@@ -272,8 +289,6 @@ pub mod pallet {
             let mut computed_hash = leaf;
 
             for (i, _) in merkle_proof.iter().enumerate() {
-                if_std! { println!("merkle_proof i:{:#?} -- {:#?} -- computed_hash {:#?}", i,  merkle_proof[i], computed_hash); }
-
                 let proof_element = merkle_proof[i];
                 if computed_hash <= proof_element {
                     // Hash(current computed hash + current element of the proof)
@@ -287,9 +302,7 @@ pub mod pallet {
                     computed_hash = Keccak256::hash(&pack);
                 }
             }
-            if_std! { println!("merkle_proof oversee {:#?}", merkle_proof); }
-            if_std! { println!("computed_hash {:#?}", computed_hash); }
-            if_std! { println!("merkle_root {:#?}", merkle_root); }
+
             computed_hash == merkle_root
         }
 

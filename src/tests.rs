@@ -11,7 +11,7 @@ use sp_runtime::AccountId32;
 #[test]
 fn one_level_merkel_tree_proof_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::create_merkle_dispatcher(
+        assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
@@ -46,7 +46,7 @@ fn one_level_merkel_tree_proof_should_work() {
 #[test]
 fn set_claimed_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::create_merkle_dispatcher(
+        assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
@@ -56,7 +56,7 @@ fn set_claimed_should_work() {
             100 * UNIT,
         ));
 
-        assert_ok!(MdPallet::create_merkle_dispatcher(
+        assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
@@ -81,7 +81,7 @@ fn set_claimed_should_work() {
 #[test]
 fn no_set_claimed_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::create_merkle_dispatcher(
+        assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
@@ -91,7 +91,7 @@ fn no_set_claimed_should_not_work() {
             100 * UNIT,
         ));
 
-        assert_ok!(MdPallet::create_merkle_dispatcher(
+        assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
@@ -116,7 +116,7 @@ fn no_set_claimed_should_not_work() {
 #[test]
 fn one_hundred_element_merkle_proof_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::create_merkle_dispatcher(
+        assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
@@ -204,7 +204,7 @@ fn one_hundred_element_merkle_proof_should_work() {
 #[test]
 fn claim_other_reward_merkle_proof_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::create_merkle_dispatcher(
+        assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
