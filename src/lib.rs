@@ -124,6 +124,7 @@ pub mod pallet {
         InvalidMerkleDistributorId,
         MerkleVerifyFailed,
         Claimed,
+        Charged,
     }
 
     #[pallet::pallet]
@@ -233,9 +234,15 @@ pub mod pallet {
             merkle_distributor_id: T::MerkleDistributorId,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
-
             let merkle = Self::get_merkle_distributor(merkle_distributor_id)
                 .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
+            ensure!(
+                T::MultiCurrency::free_balance(
+                    merkle.distribute_currency,
+                    &merkle.distribute_holder
+                ) < merkle.distribute_amount,
+                Error::<T>::Charged
+            );
 
             T::MultiCurrency::transfer(
                 merkle.distribute_currency,
@@ -264,8 +271,8 @@ pub mod pallet {
         ) -> bool {
             let mut computed_hash = leaf;
 
-            for i in 0..(merkle_proof.len()) {
-                if_std! { println!("merkle_proof i:{:#?} -- {:#?}", i,  merkle_proof[i]); }
+            for (i, _) in merkle_proof.iter().enumerate() {
+                if_std! { println!("merkle_proof i:{:#?} -- {:#?} -- computed_hash {:#?}", i,  merkle_proof[i], computed_hash); }
 
                 let proof_element = merkle_proof[i];
                 if computed_hash <= proof_element {
