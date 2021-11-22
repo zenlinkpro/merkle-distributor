@@ -54,34 +54,34 @@ pub mod pallet {
         /// The currency ID type
         type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo;
 
-        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId = Self::CurrencyId, Balance = Self::Balance>
-            + MultiReservableCurrency<
-                AccountIdOf<Self>,
-                CurrencyId = Self::CurrencyId,
-                Balance = Self::Balance,
-            > + MultiLockableCurrency<
-                AccountIdOf<Self>,
-                CurrencyId = Self::CurrencyId,
-                Balance = Self::Balance,
-            >;
+        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId=Self::CurrencyId, Balance=Self::Balance>
+        + MultiReservableCurrency<
+            AccountIdOf<Self>,
+            CurrencyId=Self::CurrencyId,
+            Balance=Self::Balance,
+        > + MultiLockableCurrency<
+            AccountIdOf<Self>,
+            CurrencyId=Self::CurrencyId,
+            Balance=Self::Balance,
+        >;
 
         /// The balance type
         type Balance: Parameter
-            + Member
-            + AtLeast32BitUnsigned
-            + Default
-            + Copy
-            + MaybeSerializeDeserialize
-            + MaxEncodedLen;
+        + Member
+        + AtLeast32BitUnsigned
+        + Default
+        + Copy
+        + MaybeSerializeDeserialize
+        + MaxEncodedLen;
 
-        /// Identifier for the class of merkle dispatcher.
+        /// Identifier for the class of merkle distributor.
         type MerkleDistributorId: Member
-            + Parameter
-            + Default
-            + Copy
-            + MaxEncodedLen
-            + One
-            + Saturating;
+        + Parameter
+        + Default
+        + Copy
+        + MaxEncodedLen
+        + One
+        + Saturating;
 
         #[pallet::constant]
         type PalletId: Get<PalletId>;
@@ -104,9 +104,9 @@ pub mod pallet {
     >;
 
     #[pallet::storage]
-    #[pallet::getter(fn merkle_dispatcher_id)]
+    #[pallet::getter(fn merkle_distributor_id)]
     pub(crate) type NextMerkleDistributorId<T: Config> =
-        StorageValue<_, T::MerkleDistributorId, ValueQuery>;
+    StorageValue<_, T::MerkleDistributorId, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn cliamed_bitmap)]
@@ -123,6 +123,9 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub (crate) fn deposit_event)]
     pub enum Event<T: Config> {
+        /// create a merkle distributor. \[merkle distributor id, merkle tree root, total reward balance]
+        Create(T::MerkleDistributorId, H256, T::Balance),
+        /// claim reward. \[merkle distributor id, account, balance]
         Claim(T::MerkleDistributorId, T::AccountId, u128),
     }
 
@@ -145,7 +148,7 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// `create_merkle_dispatcher` will create a merkle distributor,
+        /// `create_merkle_distributor` will create a merkle distributor,
         ///  which allow specified users claim asset.
         ///
         /// The dispatch origin for this call must be `Signed` by root.
@@ -164,16 +167,16 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_root(origin)?;
 
-            let merkle_dispatcher_id = Self::next_merkle_dispatcher_id();
+            let merkle_distributor_id = Self::next_merkle_distributor_id();
             let distribute_holder: AccountIdOf<T> =
-                T::PalletId::get().into_sub_account(merkle_dispatcher_id);
+                T::PalletId::get().into_sub_account(merkle_distributor_id);
 
             let description: BoundedVec<u8, T::StringLimit> = description
                 .try_into()
                 .map_err(|_| Error::<T>::BadDescription)?;
 
             MerkleDistributorMetadata::<T>::insert(
-                merkle_dispatcher_id,
+                merkle_distributor_id,
                 MerkleMetadata {
                     merkle_root,
                     description,
@@ -183,6 +186,8 @@ pub mod pallet {
                 },
             );
 
+            Self::deposit_event(Event::<T>::Create(merkle_distributor_id, merkle_root, distribute_amount));
+            
             Ok(())
         }
 
@@ -272,8 +277,8 @@ pub mod pallet {
     }
 
     impl<T: Config> Pallet<T> {
-        pub(crate) fn next_merkle_dispatcher_id() -> T::MerkleDistributorId {
-            let next_merkle_distributor_id = Self::merkle_dispatcher_id();
+        pub(crate) fn next_merkle_distributor_id() -> T::MerkleDistributorId {
+            let next_merkle_distributor_id = Self::merkle_distributor_id();
             NextMerkleDistributorId::<T>::mutate(|current| {
                 *current = current.saturating_add(One::one())
             });
