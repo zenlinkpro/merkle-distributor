@@ -1,12 +1,11 @@
-mod mock;
-mod tests;
+#![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
     pallet_prelude::*,
     sp_runtime::traits::{
         AccountIdConversion, AtLeast32BitUnsigned, Keccak256, One, Saturating, StaticLookup, Zero,
     },
-    sp_std::{convert::TryInto, vec::Vec},
+    sp_std::{convert::{TryInto, TryFrom}, vec::Vec},
     transactional, PalletId,
 };
 use frame_system::pallet_prelude::*;
@@ -15,7 +14,17 @@ use sp_core::{Hasher, H256};
 
 use orml_traits::{MultiCurrency, MultiLockableCurrency, MultiReservableCurrency};
 
-use pallet::*;
+pub use pallet::*;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+mod default_weights;
+
+pub use default_weights::WeightInfo;
 
 #[allow(type_alias_bounds)]
 type AccountIdOf<T: Config> = <T as frame_system::Config>::AccountId;
@@ -37,7 +46,6 @@ pub struct MerkleMetadata<Balance, CurrencyId, AccountId, BoundString> {
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use std::convert::TryFrom;
 
     #[pallet::config]
     pub trait Config: frame_system::Config + TypeInfo {
@@ -81,6 +89,9 @@ pub mod pallet {
         /// The maximum length of a merkel description stored on-chain.
         #[pallet::constant]
         type StringLimit: Get<u32>;
+
+        /// Weight information for extrinsics in this pallet.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::storage]
@@ -143,11 +154,7 @@ pub mod pallet {
         /// - `description`: About the purpose of this distribution.
         /// - `distribute_currency`: The id of currency about this distribution.
         /// - `distribute_amount`: The total currency amount of this distribution.
-        #[pallet::weight((
-        0,
-        DispatchClass::Normal,
-        Pays::No
-        ))]
+        #[pallet::weight(T::WeightInfo::create_merkle_distributor())]
         pub fn create_merkle_distributor(
             origin: OriginFor<T>,
             merkle_root: H256,
@@ -185,11 +192,7 @@ pub mod pallet {
         /// - `index`: The index of the merkle tree leaf.
         /// - `account`: The owner's account of merkle proof.
         /// - `merkle_proof`: The hashes with merkle tree leaf can get merkle tree root.
-        #[pallet::weight((
-        0,
-        DispatchClass::Normal,
-        Pays::No
-        ))]
+        #[pallet::weight(T::WeightInfo::claim())]
         #[transactional]
         pub fn claim(
             origin: OriginFor<T>,
@@ -215,7 +218,7 @@ pub mod pallet {
             index_data.append(&mut balance_data);
 
             let node: H256 = Keccak256::hash(&index_data);
-            
+
             let merkle = Self::get_merkle_distributor(merkle_distributor_id)
                 .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
 
@@ -240,11 +243,7 @@ pub mod pallet {
         /// Charge currency to the account of merkle distributor
         ///
         /// `merkle_distributor_id`: ID of a merkle distributor.
-        #[pallet::weight((
-        0,
-        DispatchClass::Normal,
-        Pays::No
-        ))]
+        #[pallet::weight(T::WeightInfo::charge())]
         #[transactional]
         pub fn charge(
             origin: OriginFor<T>,

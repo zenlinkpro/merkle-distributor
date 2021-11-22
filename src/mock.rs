@@ -1,6 +1,4 @@
 //! Mocks for the merkle-distributor
-#![cfg(test)]
-
 use super::*;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
@@ -123,6 +121,7 @@ impl Config for Runtime {
     type PalletId = MdPalletId;
     type StringLimit = StringLimit;
     type MultiCurrency = Tokens;
+    type WeightInfo = ();
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
