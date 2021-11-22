@@ -12,7 +12,7 @@ use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_core::{Hasher, H256};
 
-use orml_traits::{MultiCurrency, MultiLockableCurrency, MultiReservableCurrency};
+use orml_traits::MultiCurrency;
 
 pub use pallet::*;
 
@@ -54,16 +54,7 @@ pub mod pallet {
         /// The currency ID type
         type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo;
 
-        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId=Self::CurrencyId, Balance=Self::Balance>
-        + MultiReservableCurrency<
-            AccountIdOf<Self>,
-            CurrencyId=Self::CurrencyId,
-            Balance=Self::Balance,
-        > + MultiLockableCurrency<
-            AccountIdOf<Self>,
-            CurrencyId=Self::CurrencyId,
-            Balance=Self::Balance,
-        >;
+        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId=Self::CurrencyId, Balance=Self::Balance>;
 
         /// The balance type
         type Balance: Parameter
