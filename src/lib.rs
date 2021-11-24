@@ -100,7 +100,7 @@ pub mod pallet {
     StorageValue<_, T::MerkleDistributorId, ValueQuery>;
 
     #[pallet::storage]
-    #[pallet::getter(fn cliamed_bitmap)]
+    #[pallet::getter(fn claimed_bitmap)]
     pub(crate) type ClaimedBitMap<T: Config> = StorageDoubleMap<
         _,
         Twox64Concat,
@@ -305,7 +305,7 @@ pub mod pallet {
             let claimed_word_index: u32 = index / 32;
             let claimed_bit_index = index % 32;
 
-            let old_value = Self::cliamed_bitmap(merkle_distributor_id, claimed_word_index);
+            let old_value = Self::claimed_bitmap(merkle_distributor_id, claimed_word_index);
             ClaimedBitMap::<T>::insert(
                 merkle_distributor_id,
                 claimed_word_index,
@@ -320,7 +320,7 @@ pub mod pallet {
             let claimed_word_index: u32 = index / 32;
             let claimed_bit_index = index % 32;
 
-            let claimed_word = Self::cliamed_bitmap(merkle_distributor_id, claimed_word_index);
+            let claimed_word = Self::claimed_bitmap(merkle_distributor_id, claimed_word_index);
             let mask: u32 = 1 << claimed_bit_index;
             claimed_word & mask == mask
         }
