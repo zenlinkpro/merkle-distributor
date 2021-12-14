@@ -1,8 +1,8 @@
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_support::assert_ok;
 use frame_system::RawOrigin;
-use sp_core::H256;
 use hex_literal::hex;
+use sp_core::H256;
 use sp_runtime::AccountId32;
 use sp_std::vec;
 
@@ -87,4 +87,8 @@ benchmarks! {
     }:_(RawOrigin::Signed(caller.clone()), 0u32.into())
 }
 
-impl_benchmark_test_suite!(MerkleDistributor, crate::mock::new_test_ext(), crate::mock::Runtime);
+impl_benchmark_test_suite!(
+    MerkleDistributor,
+    crate::mock::new_test_ext(),
+    crate::mock::Runtime
+);

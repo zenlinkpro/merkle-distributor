@@ -124,7 +124,10 @@ fn one_hundred_element_merkle_proof_should_work() {
             1_000 * UNIT,
         ));
 
-        let holder = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        let holder = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
 
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
 
@@ -160,7 +163,10 @@ fn one_hundred_element_merkle_proof_should_work() {
         ));
 
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &owner_0), 291);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000 * UNIT - 291);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000 * UNIT - 291
+        );
 
         //owner_1 = bugDULrUyEM2u86pJQDeshjasknTEjyvepwgSj8DQMwF9B1
         let owner_1: AccountId = AccountId32::new([
@@ -202,7 +208,10 @@ fn one_hundred_element_merkle_proof_should_work() {
         ));
 
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &owner_1), 291);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000 * UNIT - 291 * 2);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000 * UNIT - 291 * 2
+        );
     })
 }
 
@@ -219,7 +228,10 @@ fn claim_other_reward_merkle_proof_should_not_work() {
             1_000 * UNIT,
         ));
 
-        let holder = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        let holder = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
 
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
 
@@ -266,8 +278,14 @@ fn claim_towice_should_not_work() {
 
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
 
-        let holder = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000_000_000 * UNIT);
+        let holder = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT
+        );
 
         let mut proof = Vec::<H256>::new();
         proof.push(H256::from(&hex!(
@@ -288,18 +306,20 @@ fn claim_towice_should_not_work() {
             10_000_000 * UNIT
         );
 
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000_000_000 * UNIT - 10_000_000 * UNIT);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT - 10_000_000 * UNIT
+        );
 
-        assert_noop!(MdPallet::claim(
-            Origin::signed(BOB),
-            0,
-            0,
-            BOB,
-            10_000_000 * UNIT,
-            proof
-        ), Error::<Runtime>::Claimed);
+        assert_noop!(
+            MdPallet::claim(Origin::signed(BOB), 0, 0, BOB, 10_000_000 * UNIT, proof),
+            Error::<Runtime>::Claimed
+        );
 
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000_000_000 * UNIT - 10_000_000 * UNIT);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT - 10_000_000 * UNIT
+        );
 
         assert_eq!(
             Tokens::free_balance(CURRENCY_TEST1, &BOB),
@@ -323,24 +343,29 @@ fn claim_use_worng_index_should_not_work() {
 
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
 
-        let holder = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000_000_000 * UNIT);
+        let holder = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT
+        );
 
         let mut proof = Vec::<H256>::new();
         proof.push(H256::from(&hex!(
             "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
         )));
 
-        assert_noop!(MdPallet::claim(
-            Origin::signed(ALICE),
-            0,
-            2,
-            BOB,
-            10_000_000 * UNIT,
-            proof
-        ), Error::<Runtime>::MerkleVerifyFailed);
+        assert_noop!(
+            MdPallet::claim(Origin::signed(ALICE), 0, 2, BOB, 10_000_000 * UNIT, proof),
+            Error::<Runtime>::MerkleVerifyFailed
+        );
 
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000_000_000 * UNIT);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT
+        );
 
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &BOB), 0);
     })
@@ -361,24 +386,36 @@ fn claim_use_worng_amount_should_not_work() {
 
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
 
-        let holder = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000_000_000 * UNIT);
+        let holder = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT
+        );
 
         let mut proof = Vec::<H256>::new();
         proof.push(H256::from(&hex!(
             "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
         )));
 
-        assert_noop!(MdPallet::claim(
-            Origin::signed(ALICE),
-            0,
-            1,
-            BOB,
-            10_000_000 * UNIT + 10,
-            proof
-        ), Error::<Runtime>::MerkleVerifyFailed);
+        assert_noop!(
+            MdPallet::claim(
+                Origin::signed(ALICE),
+                0,
+                1,
+                BOB,
+                10_000_000 * UNIT + 10,
+                proof
+            ),
+            Error::<Runtime>::MerkleVerifyFailed
+        );
 
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000_000_000 * UNIT);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT
+        );
 
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &BOB), 0);
     })
@@ -407,19 +444,34 @@ fn create_multi_merkle_distributor_should_work() {
             1_000 * UNIT,
         ));
 
-        let holder_0 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        let holder_1 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        let holder_0 = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        let holder_1 = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
 
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 0);
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_1), 0);
 
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 1_000_000_000 * UNIT);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder_0),
+            1_000_000_000 * UNIT
+        );
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_1), 0);
 
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 1,));
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 1_000_000_000 * UNIT);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_1), 1_000 * UNIT);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder_0),
+            1_000_000_000 * UNIT
+        );
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder_1),
+            1_000 * UNIT
+        );
 
         let mut proof = Vec::<H256>::new();
         proof.push(H256::from(&hex!(
@@ -439,12 +491,15 @@ fn create_multi_merkle_distributor_should_work() {
             10_000_000 * UNIT
         );
 
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_1), 1_000 * UNIT);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder_1),
+            1_000 * UNIT
+        );
     })
 }
 
 #[test]
-fn charger_must_has_enough_currency_should_work(){
+fn charger_must_has_enough_currency_should_work() {
     new_test_ext().execute_with(|| {
         assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
@@ -456,15 +511,18 @@ fn charger_must_has_enough_currency_should_work(){
             1_000_000_000 * UNIT,
         ));
 
-        MdPallet::charge(Origin::signed(BOB), 0,);
+        MdPallet::charge(Origin::signed(BOB), 0);
 
-        let holder_0 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        let holder_0 = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 0);
     })
 }
 
 #[test]
-fn charge_towice_should_not_work(){
+fn charge_towice_should_not_work() {
     new_test_ext().execute_with(|| {
         assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
@@ -476,15 +534,37 @@ fn charge_towice_should_not_work(){
             1_000_000_000 * UNIT,
         ));
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
-        let holder_0 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 1_000_000_000 * UNIT);
+        let holder_0 = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder_0),
+            1_000_000_000 * UNIT
+        );
 
-        assert_noop!(MdPallet::charge(Origin::signed(ALICE), 0,), Error::<Runtime>::Charged);
+        let mut proof = Vec::<H256>::new();
+        proof.push(H256::from(&hex!(
+            "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
+        )));
+        assert_ok!(MdPallet::claim(
+            Origin::signed(ALICE),
+            0,
+            0,
+            BOB,
+            10_000_000_000_000_000_000,
+            proof
+        ));
+
+        assert_noop!(
+            MdPallet::charge(Origin::signed(ALICE), 0,),
+            Error::<Runtime>::Charged
+        );
     })
 }
 
 #[test]
-fn withdraw_should_work(){
+fn withdraw_should_work() {
     new_test_ext().execute_with(|| {
         assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
@@ -496,16 +576,32 @@ fn withdraw_should_work(){
             1_000_000_000 * UNIT,
         ));
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
-        let holder_0 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 1_000_000_000 * UNIT);
+        let holder_0 = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder_0),
+            1_000_000_000 * UNIT
+        );
 
-        assert_ok!(MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 500_000_000 * UNIT));
-        assert_ok!(MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 500_000_000 * UNIT));
+        assert_ok!(MdPallet::emergency_withdraw(
+            Origin::root(),
+            0,
+            BOB,
+            500_000_000 * UNIT
+        ));
+        assert_ok!(MdPallet::emergency_withdraw(
+            Origin::root(),
+            0,
+            BOB,
+            500_000_000 * UNIT
+        ));
     })
 }
 
 #[test]
-fn withdraw_up_charged_should_not_work(){
+fn withdraw_up_charged_should_not_work() {
     new_test_ext().execute_with(|| {
         assert_ok!(MdPallet::create_merkle_distributor(
             Origin::root(),
@@ -517,9 +613,18 @@ fn withdraw_up_charged_should_not_work(){
             1_000_000_000 * UNIT,
         ));
         assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
-        let holder_0 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 1_000_000_000 * UNIT);
+        let holder_0 = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder_0),
+            1_000_000_000 * UNIT
+        );
 
-        assert_noop!(MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 1_100_000_000 * UNIT), Error::<Runtime>::WithdrawAmountExceed);
+        assert_noop!(
+            MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 1_100_000_000 * UNIT),
+            Error::<Runtime>::WithdrawAmountExceed
+        );
     })
 }
