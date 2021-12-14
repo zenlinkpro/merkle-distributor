@@ -5,7 +5,10 @@ use frame_support::{
     sp_runtime::traits::{
         AccountIdConversion, AtLeast32BitUnsigned, Keccak256, One, Saturating, StaticLookup, Zero,
     },
-    sp_std::{convert::{TryInto, TryFrom}, vec::Vec},
+    sp_std::{
+        convert::{TryFrom, TryInto},
+        vec::Vec,
+    },
     transactional, PalletId,
 };
 use frame_system::pallet_prelude::*;
@@ -18,11 +21,11 @@ pub use pallet::*;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+mod default_weights;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod tests;
-mod default_weights;
 
 pub use default_weights::WeightInfo;
 
@@ -41,6 +44,7 @@ pub struct MerkleMetadata<Balance, CurrencyId, AccountId, BoundString> {
     pub distribute_amount: Balance,
     /// The account holder distributed currency
     pub distribute_holder: AccountId,
+    pub charged: bool,
 }
 
 #[frame_support::pallet]
@@ -54,25 +58,29 @@ pub mod pallet {
         /// The currency ID type
         type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo;
 
-        type MultiCurrency: MultiCurrency<AccountIdOf<Self>, CurrencyId=Self::CurrencyId, Balance=Self::Balance>;
+        type MultiCurrency: MultiCurrency<
+            AccountIdOf<Self>,
+            CurrencyId = Self::CurrencyId,
+            Balance = Self::Balance,
+        >;
 
         /// The balance type
         type Balance: Parameter
-        + Member
-        + AtLeast32BitUnsigned
-        + Default
-        + Copy
-        + MaybeSerializeDeserialize
-        + MaxEncodedLen;
+            + Member
+            + AtLeast32BitUnsigned
+            + Default
+            + Copy
+            + MaybeSerializeDeserialize
+            + MaxEncodedLen;
 
         /// Identifier for the class of merkle distributor.
         type MerkleDistributorId: Member
-        + Parameter
-        + Default
-        + Copy
-        + MaxEncodedLen
-        + One
-        + Saturating;
+            + Parameter
+            + Default
+            + Copy
+            + MaxEncodedLen
+            + One
+            + Saturating;
 
         #[pallet::constant]
         type PalletId: Get<PalletId>;
@@ -97,7 +105,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn merkle_distributor_id)]
     pub(crate) type NextMerkleDistributorId<T: Config> =
-    StorageValue<_, T::MerkleDistributorId, ValueQuery>;
+        StorageValue<_, T::MerkleDistributorId, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn claimed_bitmap)]
@@ -119,7 +127,7 @@ pub mod pallet {
         /// claim reward. \[merkle distributor id, account, balance]
         Claim(T::MerkleDistributorId, T::AccountId, u128),
         /// withdraw reward. \[merkle distributor id, account, balance]
-        Withdraw(T::MerkleDistributorId, T::AccountId, T::Balance)
+        Withdraw(T::MerkleDistributorId, T::AccountId, T::Balance),
     }
 
     #[pallet::error]
@@ -136,6 +144,8 @@ pub mod pallet {
         Charged,
         /// Withdraw amount exceed charge amount.
         WithdrawAmountExceed,
+        ///
+        BadChargeAccount,
     }
 
     #[pallet::pallet]
@@ -178,11 +188,16 @@ pub mod pallet {
                     distribute_currency,
                     distribute_amount,
                     distribute_holder,
+                    charged: false,
                 },
             );
 
-            Self::deposit_event(Event::<T>::Create(merkle_distributor_id, merkle_root, distribute_amount));
-            
+            Self::deposit_event(Event::<T>::Create(
+                merkle_distributor_id,
+                merkle_root,
+                distribute_amount,
+            ));
+
             Ok(())
         }
 
@@ -250,22 +265,29 @@ pub mod pallet {
             merkle_distributor_id: T::MerkleDistributorId,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            let merkle = Self::get_merkle_distributor(merkle_distributor_id)
-                .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
-            ensure!(
-                T::MultiCurrency::free_balance(
-                    merkle.distribute_currency,
-                    &merkle.distribute_holder
-                ) < merkle.distribute_amount,
-                Error::<T>::Charged
-            );
 
-            T::MultiCurrency::transfer(
-                merkle.distribute_currency,
-                &who,
-                &merkle.distribute_holder,
-                merkle.distribute_amount,
-            )?;
+            MerkleDistributorMetadata::<T>::try_mutate(merkle_distributor_id, |metadata| {
+                match metadata {
+                    Some(meta) => {
+                        if meta.charged {
+                            return Err(Error::<T>::Charged);
+                        }
+
+                        T::MultiCurrency::transfer(
+                            meta.distribute_currency,
+                            &who,
+                            &meta.distribute_holder,
+                            meta.distribute_amount,
+                        )
+                        .map_err(|_| Error::<T>::BadChargeAccount)?;
+
+                        meta.charged = true;
+
+                        Ok(())
+                    }
+                    _ => Err(Error::<T>::InvalidMerkleDistributorId),
+                }
+            })?;
 
             Ok(())
         }
@@ -277,7 +299,7 @@ pub mod pallet {
             merkle_distributor_id: T::MerkleDistributorId,
             recipient: <T::Lookup as StaticLookup>::Source,
             amount: T::Balance,
-        ) ->DispatchResult{
+        ) -> DispatchResult {
             ensure_root(origin)?;
 
             let recipient_account = T::Lookup::lookup(recipient)?;
@@ -285,7 +307,10 @@ pub mod pallet {
             let merkle = Self::get_merkle_distributor(merkle_distributor_id)
                 .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
 
-            ensure!(merkle.distribute_amount >= amount, Error::<T>::WithdrawAmountExceed);
+            ensure!(
+                merkle.distribute_amount >= amount,
+                Error::<T>::WithdrawAmountExceed
+            );
 
             T::MultiCurrency::transfer(
                 merkle.distribute_currency,
@@ -295,9 +320,9 @@ pub mod pallet {
             )?;
 
             Self::deposit_event(Event::<T>::Withdraw(
-              merkle_distributor_id,
-              recipient_account,
-              amount
+                merkle_distributor_id,
+                recipient_account,
+                amount,
             ));
 
             Ok(())
