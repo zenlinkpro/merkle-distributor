@@ -118,6 +118,8 @@ pub mod pallet {
         Create(T::MerkleDistributorId, H256, T::Balance),
         /// claim reward. \[merkle distributor id, account, balance]
         Claim(T::MerkleDistributorId, T::AccountId, u128),
+        /// withdraw reward. \[merkle distributor id, account, balance]
+        Withdraw(T::MerkleDistributorId, T::AccountId, T::Balance)
     }
 
     #[pallet::error]
@@ -132,6 +134,8 @@ pub mod pallet {
         Claimed,
         /// The reward is already charged.
         Charged,
+        /// Withdraw amount exceed charge amount.
+        WithdrawAmountExceed,
     }
 
     #[pallet::pallet]
@@ -262,6 +266,39 @@ pub mod pallet {
                 &merkle.distribute_holder,
                 merkle.distribute_amount,
             )?;
+
+            Ok(())
+        }
+
+        #[pallet::weight(1_000_000)]
+        #[transactional]
+        pub fn emergency_withdraw(
+            origin: OriginFor<T>,
+            merkle_distributor_id: T::MerkleDistributorId,
+            recipient: <T::Lookup as StaticLookup>::Source,
+            amount: T::Balance,
+        ) ->DispatchResult{
+            ensure_root(origin)?;
+
+            let recipient_account = T::Lookup::lookup(recipient)?;
+
+            let merkle = Self::get_merkle_distributor(merkle_distributor_id)
+                .ok_or(Error::<T>::InvalidMerkleDistributorId)?;
+
+            ensure!(merkle.distribute_amount >= amount, Error::<T>::WithdrawAmountExceed);
+
+            T::MultiCurrency::transfer(
+                merkle.distribute_currency,
+                &merkle.distribute_holder,
+                &recipient_account,
+                amount,
+            )?;
+
+            Self::deposit_event(Event::<T>::Withdraw(
+              merkle_distributor_id,
+              recipient_account,
+              amount
+            ));
 
             Ok(())
         }

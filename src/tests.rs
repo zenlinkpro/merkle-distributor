@@ -482,3 +482,44 @@ fn charge_towice_should_not_work(){
         assert_noop!(MdPallet::charge(Origin::signed(ALICE), 0,), Error::<Runtime>::Charged);
     })
 }
+
+#[test]
+fn withdraw_should_work(){
+    new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::create_merkle_distributor(
+            Origin::root(),
+            H256::from(&hex!(
+                "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
+            )),
+            Vec::from("test"),
+            CURRENCY_TEST1,
+            1_000_000_000 * UNIT,
+        ));
+        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        let holder_0 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 1_000_000_000 * UNIT);
+
+        assert_ok!(MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 500_000_000 * UNIT));
+        assert_ok!(MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 500_000_000 * UNIT));
+    })
+}
+
+#[test]
+fn withdraw_up_charged_should_not_work(){
+    new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::create_merkle_distributor(
+            Origin::root(),
+            H256::from(&hex!(
+                "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
+            )),
+            Vec::from("test"),
+            CURRENCY_TEST1,
+            1_000_000_000 * UNIT,
+        ));
+        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        let holder_0 = AccountId32::new([109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 1_000_000_000 * UNIT);
+
+        assert_noop!(MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 1_100_000_000 * UNIT), Error::<Runtime>::WithdrawAmountExceed);
+    })
+}
