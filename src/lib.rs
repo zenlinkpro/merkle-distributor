@@ -6,6 +6,7 @@ use frame_support::{
         AccountIdConversion, AtLeast32BitUnsigned, Keccak256, One, Saturating, StaticLookup, Zero,
     },
     sp_std::{
+        collections::btree_set::BTreeSet,
         convert::{TryFrom, TryInto},
         vec::Vec,
     },
@@ -119,15 +120,24 @@ pub mod pallet {
         ValueQuery,
     >;
 
+    /// Accounts in the whitelist can create merkle distributor.
+    #[pallet::storage]
+    #[pallet::getter(fn create_white_set)]
+    pub type CreateWhiteSet<T> = StorageValue<_, BTreeSet<AccountIdOf<T>>, ValueQuery>;
+
     #[pallet::event]
     #[pallet::generate_deposit(pub (crate) fn deposit_event)]
     pub enum Event<T: Config> {
-        /// create a merkle distributor. \[merkle distributor id, merkle tree root, total reward balance]
+        /// create a merkle distributor. \ [merkle distributor id, merkle tree root, total reward balance]
         Create(T::MerkleDistributorId, H256, T::Balance),
         /// claim reward. \[merkle distributor id, account, balance]
         Claim(T::MerkleDistributorId, T::AccountId, u128),
-        /// withdraw reward. \[merkle distributor id, account, balance]
+        /// withdraw reward. \ [merkle distributor id, account, balance]
         Withdraw(T::MerkleDistributorId, T::AccountId, T::Balance),
+        /// add account who can create merkle distributor. \ [account]
+        AddToWhiteList(T::AccountId),
+        /// remove account from the set who can create merkle distributor. \ [account]
+        RemoveFromWhiteList(T::AccountId),
     }
 
     #[pallet::error]
@@ -146,6 +156,10 @@ pub mod pallet {
         WithdrawAmountExceed,
         ///
         BadChargeAccount,
+        /// Account has already in the set who can create merkle distributor
+        AlreadyInWhiteList,
+        /// Account is no in the set who can create merkle distributor
+        NotInWhiteList,
     }
 
     #[pallet::pallet]
@@ -153,6 +167,40 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
+        #[pallet::weight(10000)]
+        #[transactional]
+        pub fn add_to_create_whitelist(
+            origin: OriginFor<T>,
+            account: AccountIdOf<T>,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+            ensure!(
+                !Self::create_white_set().contains(&account),
+                Error::<T>::AlreadyInWhiteList
+            );
+
+            CreateWhiteSet::<T>::mutate(|v| v.insert(account.clone()));
+            Self::deposit_event(Event::<T>::AddToWhiteList(account));
+            Ok(())
+        }
+
+        #[pallet::weight(1000)]
+        #[transactional]
+        pub fn remove_from_create_whitelist(
+            origin: OriginFor<T>,
+            account: AccountIdOf<T>,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+            ensure!(
+                Self::create_white_set().contains(&account),
+                Error::<T>::NotInWhiteList
+            );
+
+            CreateWhiteSet::<T>::mutate(|v| v.remove(&account));
+            Self::deposit_event(Event::<T>::RemoveFromWhiteList(account));
+            Ok(())
+        }
+
         /// `create_merkle_distributor` will create a merkle distributor,
         ///  which allow specified users claim asset.
         ///
@@ -170,7 +218,11 @@ pub mod pallet {
             distribute_currency: T::CurrencyId,
             distribute_amount: T::Balance,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            let who = ensure_signed(origin)?;
+            ensure!(
+                Self::create_white_set().contains(&who),
+                Error::<T>::NotInWhiteList
+            );
 
             let merkle_distributor_id = Self::next_merkle_distributor_id();
             let distribute_holder: AccountIdOf<T> =
