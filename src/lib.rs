@@ -167,7 +167,7 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(10000)]
+        #[pallet::weight(100000000)]
         #[transactional]
         pub fn add_to_create_whitelist(
             origin: OriginFor<T>,
@@ -184,7 +184,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(1000)]
+        #[pallet::weight(100000000)]
         #[transactional]
         pub fn remove_from_create_whitelist(
             origin: OriginFor<T>,
