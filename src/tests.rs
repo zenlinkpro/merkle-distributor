@@ -9,8 +9,10 @@ use sp_runtime::AccountId32;
 #[test]
 fn one_level_merkel_tree_proof_should_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -44,8 +46,10 @@ fn one_level_merkel_tree_proof_should_work() {
 #[test]
 fn set_claimed_should_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -55,7 +59,7 @@ fn set_claimed_should_work() {
         ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -79,8 +83,10 @@ fn set_claimed_should_work() {
 #[test]
 fn no_set_claimed_should_not_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -90,7 +96,7 @@ fn no_set_claimed_should_not_work() {
         ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -114,8 +120,10 @@ fn no_set_claimed_should_not_work() {
 #[test]
 fn one_hundred_element_merkle_proof_should_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -218,8 +226,10 @@ fn one_hundred_element_merkle_proof_should_work() {
 #[test]
 fn claim_other_reward_merkle_proof_should_not_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -266,8 +276,10 @@ fn claim_other_reward_merkle_proof_should_not_work() {
 #[test]
 fn claim_towice_should_not_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -331,8 +343,10 @@ fn claim_towice_should_not_work() {
 #[test]
 fn claim_use_worng_index_should_not_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -374,8 +388,10 @@ fn claim_use_worng_index_should_not_work() {
 #[test]
 fn claim_use_worng_amount_should_not_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -424,8 +440,10 @@ fn claim_use_worng_amount_should_not_work() {
 #[test]
 fn create_multi_merkle_distributor_should_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -435,7 +453,7 @@ fn create_multi_merkle_distributor_should_work() {
         ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -501,8 +519,10 @@ fn create_multi_merkle_distributor_should_work() {
 #[test]
 fn charger_must_has_enough_currency_should_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -524,8 +544,10 @@ fn charger_must_has_enough_currency_should_work() {
 #[test]
 fn charge_towice_should_not_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -566,8 +588,10 @@ fn charge_towice_should_not_work() {
 #[test]
 fn withdraw_should_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -603,8 +627,10 @@ fn withdraw_should_work() {
 #[test]
 fn withdraw_up_charged_should_not_work() {
     new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::root(),
+            Origin::signed(ALICE),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -626,5 +652,42 @@ fn withdraw_up_charged_should_not_work() {
             MdPallet::emergency_withdraw(Origin::root(), 0, BOB, 1_100_000_000 * UNIT),
             Error::<Runtime>::WithdrawAmountExceed
         );
+    })
+}
+
+#[test]
+fn add_to_whitelist_should_work() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+
+        assert_noop!(
+            MdPallet::add_to_create_whitelist(Origin::root(), ALICE,),
+            Error::<Runtime>::AlreadyInWhiteList
+        );
+
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), BOB,));
+
+        assert_noop!(
+            MdPallet::add_to_create_whitelist(Origin::root(), ALICE,),
+            Error::<Runtime>::AlreadyInWhiteList
+        );
+
+        assert!(MdPallet::create_white_set().contains(&ALICE));
+        assert!(MdPallet::create_white_set().contains(&BOB));
+    })
+}
+
+#[test]
+fn remove_from_whitelist_should_work() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert!(MdPallet::create_white_set().contains(&ALICE));
+
+        assert_ok!(MdPallet::remove_from_create_whitelist(
+            Origin::root(),
+            ALICE,
+        ));
+
+        assert!(!MdPallet::create_white_set().contains(&ALICE));
     })
 }

@@ -22,8 +22,9 @@ benchmarks! {
     where_clause {  where T::CurrencyId : From<CurrencyId>, T::Balance : From<u32>, T::AccountId: From<AccountId32>, T::MerkleDistributorId:From<u32>}
 
     create_merkle_distributor{
-
-    }:_(RawOrigin::Root, H256::from(&hex!(
+        let caller: T::AccountId = whitelisted_caller();
+        assert_ok!(MerkleDistributor::<T>::add_to_create_whitelist((RawOrigin::Root).into(), caller.clone()));
+    }:_(RawOrigin::Signed(caller.clone()), H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
             Vec::from("test"),
@@ -33,8 +34,9 @@ benchmarks! {
     claim{
         let caller: T::AccountId = whitelisted_caller();
 
+        assert_ok!(MerkleDistributor::<T>::add_to_create_whitelist((RawOrigin::Root).into(), caller.clone()));
         assert_ok!(MerkleDistributor::<T>::create_merkle_distributor(
-           (RawOrigin::Root).into(),
+           RawOrigin::Signed(caller.clone()),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -72,8 +74,9 @@ benchmarks! {
 
     charge{
         let caller: T::AccountId = whitelisted_caller();
+        assert_ok!(MerkleDistributor::<T>::add_to_create_whitelist((RawOrigin::Root).into(), caller.clone()));
         assert_ok!(MerkleDistributor::<T>::create_merkle_distributor(
-           (RawOrigin::Root).into(),
+           RawOrigin::Signed(caller.clone()),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -85,6 +88,15 @@ benchmarks! {
         assert_ok!(<T as Config>::MultiCurrency::deposit(T::CurrencyId::from(REWARD_2), &caller, T::Balance::from(1_000_000_000)));
 
     }:_(RawOrigin::Signed(caller.clone()), 0u32.into())
+
+    add_to_create_whitelist{
+        let caller: T::AccountId = whitelisted_caller();
+    }:_((RawOrigin::Root).into(), caller.clone())
+
+    remove_from_create_whitelist{
+        let caller: T::AccountId = whitelisted_caller();
+        assert_ok!(MerkleDistributor::<T>::add_to_create_whitelist((RawOrigin::Root).into(), caller.clone()));
+    }:_((RawOrigin::Root).into(), caller.clone())
 }
 
 impl_benchmark_test_suite!(
