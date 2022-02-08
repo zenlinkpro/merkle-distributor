@@ -53,11 +53,17 @@ pub mod pallet {
     use super::*;
 
     #[pallet::config]
-    pub trait Config: frame_system::Config + TypeInfo {
+    pub trait Config: frame_system::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
         /// The currency ID type
-        type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo;
+        type CurrencyId: Parameter
+            + Member
+            + Copy
+            + MaybeSerializeDeserialize
+            + Ord
+            + TypeInfo
+            + MaxEncodedLen;
 
         type MultiCurrency: MultiCurrency<
             AccountIdOf<Self>,
@@ -163,6 +169,7 @@ pub mod pallet {
     }
 
     #[pallet::pallet]
+    #[pallet::without_storage_info]
     pub struct Pallet<T>(PhantomData<T>);
 
     #[pallet::call]
