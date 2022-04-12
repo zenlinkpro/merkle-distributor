@@ -359,7 +359,11 @@ pub mod pallet {
             recipient: <T::Lookup as StaticLookup>::Source,
             amount: T::Balance,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            let who = ensure_signed(origin)?;
+            ensure!(
+                Self::create_white_set().contains(&who),
+                Error::<T>::NotInWhiteList
+            );
 
             let recipient_account = T::Lookup::lookup(recipient)?;
 
