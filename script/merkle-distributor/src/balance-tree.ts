@@ -32,7 +32,6 @@ export default class BalanceTree {
 
   public static toNode(index: number | BigNumber, account: string, amount: BigNumber): Buffer {
     let publicKey = keyring.decodeAddress(account);
-    console.log(publicKey)
     return Buffer.from(
       utils.solidityKeccak256(['uint32', 'bytes', 'uint128'], [index,  u8aToHex(publicKey), amount]).substr(2),
       'hex'
