@@ -100,6 +100,8 @@ impl orml_tokens::Config for Runtime {
     type OnDust = ();
     type MaxLocks = ();
     type DustRemovalWhitelist = DustRemovalWhitelist;
+    type MaxReserves = MaxReserves;
+    type ReserveIdentifier = [u8; 8];
 }
 
 impl pallet_balances::Config for Runtime {
