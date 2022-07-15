@@ -12,14 +12,38 @@ use sp_runtime::{
     AccountId32, MultiSignature,
 };
 
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, MaxEncodedLen, PartialOrd, Ord, TypeInfo)]
+#[derive(
+    Encode,
+    Decode,
+    Eq,
+    PartialEq,
+    Copy,
+    Clone,
+    RuntimeDebug,
+    MaxEncodedLen,
+    PartialOrd,
+    Ord,
+    TypeInfo,
+)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum CurrencyId {
     Token(TokenSymbol),
     Other(TokenSymbol),
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, MaxEncodedLen,PartialOrd, Ord, TypeInfo)]
+#[derive(
+    Encode,
+    Decode,
+    Eq,
+    PartialEq,
+    Copy,
+    Clone,
+    RuntimeDebug,
+    MaxEncodedLen,
+    PartialOrd,
+    Ord,
+    TypeInfo,
+)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum TokenSymbol {
     Test1 = 0,
@@ -102,6 +126,8 @@ impl orml_tokens::Config for Runtime {
     type DustRemovalWhitelist = DustRemovalWhitelist;
     type MaxReserves = MaxReserves;
     type ReserveIdentifier = [u8; 8];
+    type OnNewTokenAccount = ();
+    type OnKilledTokenAccount = ();
 }
 
 impl pallet_balances::Config for Runtime {
