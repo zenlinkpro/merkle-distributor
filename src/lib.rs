@@ -10,7 +10,7 @@ use frame_support::{
         convert::{TryFrom, TryInto},
         vec::Vec,
     },
-    transactional, PalletId,
+    PalletId,
 };
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
@@ -175,7 +175,6 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(100000000)]
-        #[transactional]
         pub fn add_to_create_whitelist(
             origin: OriginFor<T>,
             account: AccountIdOf<T>,
@@ -192,7 +191,6 @@ pub mod pallet {
         }
 
         #[pallet::weight(100000000)]
-        #[transactional]
         pub fn remove_from_create_whitelist(
             origin: OriginFor<T>,
             account: AccountIdOf<T>,
@@ -233,7 +231,7 @@ pub mod pallet {
 
             let merkle_distributor_id = Self::next_merkle_distributor_id();
             let distribute_holder: AccountIdOf<T> =
-                T::PalletId::get().into_sub_account(merkle_distributor_id);
+                T::PalletId::get().into_sub_account_truncating(merkle_distributor_id);
 
             let description: BoundedVec<u8, T::StringLimit> = description
                 .try_into()
@@ -267,7 +265,6 @@ pub mod pallet {
         /// - `account`: The owner's account of merkle proof.
         /// - `merkle_proof`: The hashes with merkle tree leaf can get merkle tree root.
         #[pallet::weight(T::WeightInfo::claim())]
-        #[transactional]
         pub fn claim(
             origin: OriginFor<T>,
             merkle_distributor_id: T::MerkleDistributorId,
@@ -318,7 +315,6 @@ pub mod pallet {
         ///
         /// `merkle_distributor_id`: ID of a merkle distributor.
         #[pallet::weight(T::WeightInfo::charge())]
-        #[transactional]
         pub fn charge(
             origin: OriginFor<T>,
             merkle_distributor_id: T::MerkleDistributorId,
@@ -352,7 +348,6 @@ pub mod pallet {
         }
 
         #[pallet::weight(1_000_000)]
-        #[transactional]
         pub fn emergency_withdraw(
             origin: OriginFor<T>,
             merkle_distributor_id: T::MerkleDistributorId,

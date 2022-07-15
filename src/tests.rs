@@ -531,7 +531,10 @@ fn charger_must_has_enough_currency_should_work() {
             1_000_000_000 * UNIT,
         ));
 
-        MdPallet::charge(Origin::signed(BOB), 0);
+        assert_noop!(
+            MdPallet::charge(Origin::signed(BOB), 0),
+            Error::<Runtime>::BadChargeAccount
+        );
 
         let holder_0 = AccountId32::new([
             109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -624,7 +627,6 @@ fn withdraw_should_work() {
     })
 }
 
-
 #[test]
 fn withdraw_should_account_not_in_white_list_not_work() {
     new_test_ext().execute_with(|| {
@@ -649,19 +651,15 @@ fn withdraw_should_account_not_in_white_list_not_work() {
             1_000_000_000 * UNIT
         );
 
-        assert_noop!(MdPallet::emergency_withdraw(
-            Origin::signed(BOB),
-            0,
-            BOB,
-            500_000_000 * UNIT
-        ), Error::<Runtime>::NotInWhiteList);
+        assert_noop!(
+            MdPallet::emergency_withdraw(Origin::signed(BOB), 0, BOB, 500_000_000 * UNIT),
+            Error::<Runtime>::NotInWhiteList
+        );
 
-        assert_noop!(MdPallet::emergency_withdraw(
-            Origin::signed(BOB),
-            0,
-            BOB,
-            500_000_000 * UNIT
-        ), Error::<Runtime>::NotInWhiteList);
+        assert_noop!(
+            MdPallet::emergency_withdraw(Origin::signed(BOB), 0, BOB, 500_000_000 * UNIT),
+            Error::<Runtime>::NotInWhiteList
+        );
     })
 }
 
