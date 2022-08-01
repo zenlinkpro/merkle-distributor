@@ -624,7 +624,6 @@ fn withdraw_should_work() {
     })
 }
 
-
 #[test]
 fn withdraw_should_account_not_in_white_list_not_work() {
     new_test_ext().execute_with(|| {
@@ -649,19 +648,15 @@ fn withdraw_should_account_not_in_white_list_not_work() {
             1_000_000_000 * UNIT
         );
 
-        assert_noop!(MdPallet::emergency_withdraw(
-            Origin::signed(BOB),
-            0,
-            BOB,
-            500_000_000 * UNIT
-        ), Error::<Runtime>::NotInWhiteList);
+        assert_noop!(
+            MdPallet::emergency_withdraw(Origin::signed(BOB), 0, BOB, 500_000_000 * UNIT),
+            Error::<Runtime>::NotInWhiteList
+        );
 
-        assert_noop!(MdPallet::emergency_withdraw(
-            Origin::signed(BOB),
-            0,
-            BOB,
-            500_000_000 * UNIT
-        ), Error::<Runtime>::NotInWhiteList);
+        assert_noop!(
+            MdPallet::emergency_withdraw(Origin::signed(BOB), 0, BOB, 500_000_000 * UNIT),
+            Error::<Runtime>::NotInWhiteList
+        );
     })
 }
 

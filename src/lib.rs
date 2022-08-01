@@ -233,7 +233,7 @@ pub mod pallet {
 
             let merkle_distributor_id = Self::next_merkle_distributor_id();
             let distribute_holder: AccountIdOf<T> =
-                T::PalletId::get().into_sub_account(merkle_distributor_id);
+                T::PalletId::get().into_sub_account_truncating(merkle_distributor_id);
 
             let description: BoundedVec<u8, T::StringLimit> = description
                 .try_into()
