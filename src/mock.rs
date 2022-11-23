@@ -1,3 +1,6 @@
+// Copyright 2021-2022 Zenlink.
+// Licensed under Apache 2.0.
+
 //! Mocks for the merkle-distributor
 use super::*;
 use scale_info::TypeInfo;
@@ -80,16 +83,16 @@ pub const ALICE: AccountId = AccountId32::new([0u8; 32]);
 pub const BOB: AccountId = AccountId32::new([1u8; 32]);
 
 impl frame_system::Config for Runtime {
-    type Origin = Origin;
+    type RuntimeOrigin = RuntimeOrigin;
     type Index = u64;
     type BlockNumber = u64;
-    type Call = Call;
+    type RuntimeCall = RuntimeCall;
     type Hash = H256;
     type Hashing = ::sp_runtime::traits::BlakeTwo256;
     type AccountId = AccountId;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = BlockHashCount;
     type BlockWeights = ();
     type BlockLength = ();
@@ -115,25 +118,23 @@ impl Contains<AccountId> for DustRemovalWhitelist {
 }
 
 impl orml_tokens::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Balance = Balance;
     type Amount = i128;
     type CurrencyId = CurrencyId;
     type WeightInfo = ();
     type ExistentialDeposits = ExistentialDeposits;
-    type OnDust = ();
     type MaxLocks = ();
     type DustRemovalWhitelist = DustRemovalWhitelist;
     type MaxReserves = MaxReserves;
     type ReserveIdentifier = [u8; 8];
-    type OnNewTokenAccount = ();
-    type OnKilledTokenAccount = ();
+    type CurrencyHooks = ();
 }
 
 impl pallet_balances::Config for Runtime {
     type Balance = u128;
     type DustRemoval = ();
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type ExistentialDeposit = ExistentialDeposit;
     type AccountStore = frame_system::Pallet<Runtime>;
     type WeightInfo = ();
@@ -143,7 +144,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 impl Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Balance = Balance;
     type CurrencyId = CurrencyId;
     type MerkleDistributorId = u32;

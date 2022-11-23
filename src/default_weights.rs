@@ -57,26 +57,26 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: MerkleDistributor NextMerkleDistributorId (r:1 w:1)
 	// Storage: MerkleDistributor MerkleDistributorMetadata (r:0 w:1)
 	fn create_merkle_distributor() -> Weight {
-		(10_778_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(10_778_000)
+			.saturating_add(T::DbWeight::get().reads(1 as u64))
+			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
 	// Storage: MerkleDistributor ClaimedBitMap (r:1 w:1)
 	// Storage: MerkleDistributor MerkleDistributorMetadata (r:1 w:0)
 	// Storage: Tokens Accounts (r:2 w:2)
 	// Storage: System Account (r:2 w:1)
 	fn claim() -> Weight {
-		(83_477_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
-			.saturating_add(T::DbWeight::get().writes(4 as Weight))
+		Weight::from_ref_time(83_477_000)
+			.saturating_add(T::DbWeight::get().reads(6 as u64))
+			.saturating_add(T::DbWeight::get().writes(4 as u64))
 	}
 	// Storage: MerkleDistributor MerkleDistributorMetadata (r:1 w:0)
 	// Storage: Tokens Accounts (r:2 w:2)
 	// Storage: System Account (r:1 w:1)
 	fn charge() -> Weight {
-		(64_614_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(64_614_000)
+			.saturating_add(T::DbWeight::get().reads(4 as u64))
+			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
 }
 
@@ -85,25 +85,25 @@ impl WeightInfo for () {
 	// Storage: MerkleDistributor NextMerkleDistributorId (r:1 w:1)
 	// Storage: MerkleDistributor MerkleDistributorMetadata (r:0 w:1)
 	fn create_merkle_distributor() -> Weight {
-		(10_778_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(10_778_000)
+			.saturating_add(RocksDbWeight::get().reads(1 as u64))
+			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
 	// Storage: MerkleDistributor ClaimedBitMap (r:1 w:1)
 	// Storage: MerkleDistributor MerkleDistributorMetadata (r:1 w:0)
 	// Storage: Tokens Accounts (r:2 w:2)
 	// Storage: System Account (r:2 w:1)
 	fn claim() -> Weight {
-		(83_477_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+		Weight::from_ref_time(83_477_000)
+			.saturating_add(RocksDbWeight::get().reads(6 as u64))
+			.saturating_add(RocksDbWeight::get().writes(4 as u64))
 	}
 	// Storage: MerkleDistributor MerkleDistributorMetadata (r:1 w:0)
 	// Storage: Tokens Accounts (r:2 w:2)
 	// Storage: System Account (r:1 w:1)
 	fn charge() -> Weight {
-		(64_614_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(64_614_000)
+			.saturating_add(RocksDbWeight::get().reads(4 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
 }

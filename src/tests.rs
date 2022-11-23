@@ -1,6 +1,10 @@
+// Copyright 2021-2022 Zenlink.
+// Licensed under Apache 2.0.
+
 use super::*;
 use crate::mock::*;
 use frame_support::{assert_noop, assert_ok};
+use frame_system::RawOrigin;
 use hex_literal::hex;
 use orml_traits::MultiCurrency;
 use sp_core::H256;
@@ -9,10 +13,13 @@ use sp_runtime::AccountId32;
 #[test]
 fn one_level_merkel_tree_proof_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -21,14 +28,14 @@ fn one_level_merkel_tree_proof_should_work() {
             1_000_000_000 * UNIT,
         ));
 
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
 
         let mut proof = Vec::<H256>::new();
         proof.push(H256::from(&hex!(
             "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
         )));
         assert_ok!(MdPallet::claim(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             0,
             BOB,
@@ -46,10 +53,13 @@ fn one_level_merkel_tree_proof_should_work() {
 #[test]
 fn set_claimed_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -59,7 +69,7 @@ fn set_claimed_should_work() {
         ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -83,10 +93,13 @@ fn set_claimed_should_work() {
 #[test]
 fn no_set_claimed_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -96,7 +109,7 @@ fn no_set_claimed_should_not_work() {
         ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -120,10 +133,13 @@ fn no_set_claimed_should_not_work() {
 #[test]
 fn one_hundred_element_merkle_proof_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -137,7 +153,7 @@ fn one_hundred_element_merkle_proof_should_work() {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]);
 
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
 
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000 * UNIT);
 
@@ -162,7 +178,7 @@ fn one_hundred_element_merkle_proof_should_work() {
         ];
 
         assert_ok!(MdPallet::claim(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             1,
             owner_0.clone(),
@@ -207,7 +223,7 @@ fn one_hundred_element_merkle_proof_should_work() {
         ];
 
         assert_ok!(MdPallet::claim(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             2,
             owner_1.clone(),
@@ -226,10 +242,13 @@ fn one_hundred_element_merkle_proof_should_work() {
 #[test]
 fn claim_other_reward_merkle_proof_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -243,7 +262,7 @@ fn claim_other_reward_merkle_proof_should_not_work() {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]);
 
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
 
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder), 1_000 * UNIT);
 
@@ -264,7 +283,7 @@ fn claim_other_reward_merkle_proof_should_not_work() {
         ];
 
         assert_noop!(
-            MdPallet::claim(Origin::signed(ALICE), 0, 1, BOB, 291, proof),
+            MdPallet::claim(RawOrigin::Signed(ALICE).into(), 0, 1, BOB, 291, proof),
             Error::<Runtime>::MerkleVerifyFailed
         );
 
@@ -276,10 +295,13 @@ fn claim_other_reward_merkle_proof_should_not_work() {
 #[test]
 fn claim_towice_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -288,7 +310,7 @@ fn claim_towice_should_not_work() {
             1_000_000_000 * UNIT,
         ));
 
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
 
         let holder = AccountId32::new([
             109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -305,7 +327,7 @@ fn claim_towice_should_not_work() {
         )));
 
         assert_ok!(MdPallet::claim(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             0,
             BOB,
@@ -324,7 +346,14 @@ fn claim_towice_should_not_work() {
         );
 
         assert_noop!(
-            MdPallet::claim(Origin::signed(BOB), 0, 0, BOB, 10_000_000 * UNIT, proof),
+            MdPallet::claim(
+                RawOrigin::Signed(BOB).into(),
+                0,
+                0,
+                BOB,
+                10_000_000 * UNIT,
+                proof
+            ),
             Error::<Runtime>::Claimed
         );
 
@@ -343,10 +372,13 @@ fn claim_towice_should_not_work() {
 #[test]
 fn claim_use_worng_index_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -355,52 +387,7 @@ fn claim_use_worng_index_should_not_work() {
             1_000_000_000 * UNIT,
         ));
 
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
-
-        let holder = AccountId32::new([
-            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        ]);
-        assert_eq!(
-            Tokens::free_balance(CURRENCY_TEST1, &holder),
-            1_000_000_000 * UNIT
-        );
-
-        let mut proof = Vec::<H256>::new();
-        proof.push(H256::from(&hex!(
-            "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
-        )));
-
-        assert_noop!(
-            MdPallet::claim(Origin::signed(ALICE), 0, 2, BOB, 10_000_000 * UNIT, proof),
-            Error::<Runtime>::MerkleVerifyFailed
-        );
-
-        assert_eq!(
-            Tokens::free_balance(CURRENCY_TEST1, &holder),
-            1_000_000_000 * UNIT
-        );
-
-        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &BOB), 0);
-    })
-}
-
-#[test]
-fn claim_use_worng_amount_should_not_work() {
-    new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
-
-        assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
-            H256::from(&hex!(
-                "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
-            )),
-            Vec::from("test"),
-            CURRENCY_TEST1,
-            1_000_000_000 * UNIT,
-        ));
-
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
 
         let holder = AccountId32::new([
             109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -418,7 +405,62 @@ fn claim_use_worng_amount_should_not_work() {
 
         assert_noop!(
             MdPallet::claim(
-                Origin::signed(ALICE),
+                RawOrigin::Signed(ALICE).into(),
+                0,
+                2,
+                BOB,
+                10_000_000 * UNIT,
+                proof
+            ),
+            Error::<Runtime>::MerkleVerifyFailed
+        );
+
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT
+        );
+
+        assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &BOB), 0);
+    })
+}
+
+#[test]
+fn claim_use_worng_amount_should_not_work() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
+
+        assert_ok!(MdPallet::create_merkle_distributor(
+            RawOrigin::Signed(ALICE).into(),
+            H256::from(&hex!(
+                "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
+            )),
+            Vec::from("test"),
+            CURRENCY_TEST1,
+            1_000_000_000 * UNIT,
+        ));
+
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
+
+        let holder = AccountId32::new([
+            109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        assert_eq!(
+            Tokens::free_balance(CURRENCY_TEST1, &holder),
+            1_000_000_000 * UNIT
+        );
+
+        let mut proof = Vec::<H256>::new();
+        proof.push(H256::from(&hex!(
+            "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
+        )));
+
+        assert_noop!(
+            MdPallet::claim(
+                RawOrigin::Signed(ALICE).into(),
                 0,
                 1,
                 BOB,
@@ -440,10 +482,13 @@ fn claim_use_worng_amount_should_not_work() {
 #[test]
 fn create_multi_merkle_distributor_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -453,7 +498,7 @@ fn create_multi_merkle_distributor_should_work() {
         ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "c5a4b4dbe724bfb5aac5879fa145e98686e3e77aacacfc7e6dbea5daa587af3f"
             )),
@@ -474,14 +519,14 @@ fn create_multi_merkle_distributor_should_work() {
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_0), 0);
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_1), 0);
 
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
         assert_eq!(
             Tokens::free_balance(CURRENCY_TEST1, &holder_0),
             1_000_000_000 * UNIT
         );
         assert_eq!(Tokens::free_balance(CURRENCY_TEST1, &holder_1), 0);
 
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 1,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 1,));
         assert_eq!(
             Tokens::free_balance(CURRENCY_TEST1, &holder_0),
             1_000_000_000 * UNIT
@@ -496,7 +541,7 @@ fn create_multi_merkle_distributor_should_work() {
             "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
         )));
         assert_ok!(MdPallet::claim(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             0,
             BOB,
@@ -519,10 +564,13 @@ fn create_multi_merkle_distributor_should_work() {
 #[test]
 fn charger_must_has_enough_currency_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -532,7 +580,7 @@ fn charger_must_has_enough_currency_should_work() {
         ));
 
         assert_noop!(
-            MdPallet::charge(Origin::signed(BOB), 0),
+            MdPallet::charge(RawOrigin::Signed(BOB).into(), 0),
             Error::<Runtime>::BadChargeAccount
         );
 
@@ -547,10 +595,13 @@ fn charger_must_has_enough_currency_should_work() {
 #[test]
 fn charge_towice_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -558,7 +609,7 @@ fn charge_towice_should_not_work() {
             CURRENCY_TEST1,
             1_000_000_000 * UNIT,
         ));
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
         let holder_0 = AccountId32::new([
             109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -573,7 +624,7 @@ fn charge_towice_should_not_work() {
             "5d6763b1aaa996a5854b019d1bd087543a1c5977d0d8c448380ca6b953007b78"
         )));
         assert_ok!(MdPallet::claim(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             0,
             BOB,
@@ -582,7 +633,7 @@ fn charge_towice_should_not_work() {
         ));
 
         assert_noop!(
-            MdPallet::charge(Origin::signed(ALICE), 0,),
+            MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,),
             Error::<Runtime>::Charged
         );
     })
@@ -591,10 +642,13 @@ fn charge_towice_should_not_work() {
 #[test]
 fn withdraw_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -602,7 +656,7 @@ fn withdraw_should_work() {
             CURRENCY_TEST1,
             1_000_000_000 * UNIT,
         ));
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
         let holder_0 = AccountId32::new([
             109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -613,13 +667,13 @@ fn withdraw_should_work() {
         );
 
         assert_ok!(MdPallet::emergency_withdraw(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             BOB,
             500_000_000 * UNIT
         ));
         assert_ok!(MdPallet::emergency_withdraw(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             0,
             BOB,
             500_000_000 * UNIT
@@ -630,10 +684,13 @@ fn withdraw_should_work() {
 #[test]
 fn withdraw_should_account_not_in_white_list_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -641,7 +698,7 @@ fn withdraw_should_account_not_in_white_list_not_work() {
             CURRENCY_TEST1,
             1_000_000_000 * UNIT,
         ));
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
         let holder_0 = AccountId32::new([
             109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -652,12 +709,12 @@ fn withdraw_should_account_not_in_white_list_not_work() {
         );
 
         assert_noop!(
-            MdPallet::emergency_withdraw(Origin::signed(BOB), 0, BOB, 500_000_000 * UNIT),
+            MdPallet::emergency_withdraw(RawOrigin::Signed(BOB).into(), 0, BOB, 500_000_000 * UNIT),
             Error::<Runtime>::NotInWhiteList
         );
 
         assert_noop!(
-            MdPallet::emergency_withdraw(Origin::signed(BOB), 0, BOB, 500_000_000 * UNIT),
+            MdPallet::emergency_withdraw(RawOrigin::Signed(BOB).into(), 0, BOB, 500_000_000 * UNIT),
             Error::<Runtime>::NotInWhiteList
         );
     })
@@ -666,10 +723,13 @@ fn withdraw_should_account_not_in_white_list_not_work() {
 #[test]
 fn withdraw_up_charged_should_not_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_ok!(MdPallet::create_merkle_distributor(
-            Origin::signed(ALICE),
+            RawOrigin::Signed(ALICE).into(),
             H256::from(&hex!(
                 "056980ee78588f3d5ceab5645b2dc2838c19f938151bc1c70547664c6bf57932"
             )),
@@ -677,7 +737,7 @@ fn withdraw_up_charged_should_not_work() {
             CURRENCY_TEST1,
             1_000_000_000 * UNIT,
         ));
-        assert_ok!(MdPallet::charge(Origin::signed(ALICE), 0,));
+        assert_ok!(MdPallet::charge(RawOrigin::Signed(ALICE).into(), 0,));
         let holder_0 = AccountId32::new([
             109, 111, 100, 108, 122, 108, 107, 47, 109, 100, 42, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -688,7 +748,12 @@ fn withdraw_up_charged_should_not_work() {
         );
 
         assert_noop!(
-            MdPallet::emergency_withdraw(Origin::signed(ALICE), 0, BOB, 1_100_000_000 * UNIT),
+            MdPallet::emergency_withdraw(
+                RawOrigin::Signed(ALICE).into(),
+                0,
+                BOB,
+                1_100_000_000 * UNIT
+            ),
             Error::<Runtime>::WithdrawAmountExceed
         );
     })
@@ -697,17 +762,23 @@ fn withdraw_up_charged_should_not_work() {
 #[test]
 fn add_to_whitelist_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
 
         assert_noop!(
-            MdPallet::add_to_create_whitelist(Origin::root(), ALICE,),
+            MdPallet::add_to_create_whitelist(RawOrigin::Root.into(), ALICE,),
             Error::<Runtime>::AlreadyInWhiteList
         );
 
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), BOB,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            BOB,
+        ));
 
         assert_noop!(
-            MdPallet::add_to_create_whitelist(Origin::root(), ALICE,),
+            MdPallet::add_to_create_whitelist(RawOrigin::Root.into(), ALICE,),
             Error::<Runtime>::AlreadyInWhiteList
         );
 
@@ -719,11 +790,14 @@ fn add_to_whitelist_should_work() {
 #[test]
 fn remove_from_whitelist_should_work() {
     new_test_ext().execute_with(|| {
-        assert_ok!(MdPallet::add_to_create_whitelist(Origin::root(), ALICE,));
+        assert_ok!(MdPallet::add_to_create_whitelist(
+            RawOrigin::Root.into(),
+            ALICE,
+        ));
         assert!(MdPallet::create_white_set().contains(&ALICE));
 
         assert_ok!(MdPallet::remove_from_create_whitelist(
-            Origin::root(),
+            RawOrigin::Root.into(),
             ALICE,
         ));
 
