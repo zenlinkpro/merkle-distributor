@@ -49,3 +49,4 @@ runtime-benchmarks = [
     "hex-literal",
     "sp-io",
 ]
+try-runtime = [ "frame-support/try-runtime" ]
