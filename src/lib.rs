@@ -177,6 +177,7 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
+        #[pallet::call_index(0)]
         #[pallet::weight(100000000)]
         pub fn add_to_create_whitelist(
             origin: OriginFor<T>,
@@ -193,6 +194,7 @@ pub mod pallet {
             Ok(())
         }
 
+        #[pallet::call_index(1)]
         #[pallet::weight(100000000)]
         pub fn remove_from_create_whitelist(
             origin: OriginFor<T>,
@@ -218,6 +220,7 @@ pub mod pallet {
         /// - `description`: About the purpose of this distribution.
         /// - `distribute_currency`: The id of currency about this distribution.
         /// - `distribute_amount`: The total currency amount of this distribution.
+        #[pallet::call_index(2)]
         #[pallet::weight(T::WeightInfo::create_merkle_distributor())]
         pub fn create_merkle_distributor(
             origin: OriginFor<T>,
@@ -267,6 +270,7 @@ pub mod pallet {
         /// - `index`: The index of the merkle tree leaf.
         /// - `account`: The owner's account of merkle proof.
         /// - `merkle_proof`: The hashes with merkle tree leaf can get merkle tree root.
+        #[pallet::call_index(3)]
         #[pallet::weight(T::WeightInfo::claim())]
         pub fn claim(
             origin: OriginFor<T>,
@@ -317,6 +321,7 @@ pub mod pallet {
         /// Charge currency to the account of merkle distributor
         ///
         /// `merkle_distributor_id`: ID of a merkle distributor.
+        #[pallet::call_index(4)]
         #[pallet::weight(T::WeightInfo::charge())]
         pub fn charge(
             origin: OriginFor<T>,
@@ -350,6 +355,7 @@ pub mod pallet {
             Ok(())
         }
 
+        #[pallet::call_index(5)]
         #[pallet::weight(1_000_000)]
         pub fn emergency_withdraw(
             origin: OriginFor<T>,
