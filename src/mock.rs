@@ -141,6 +141,10 @@ impl pallet_balances::Config for Runtime {
     type MaxLocks = ();
     type MaxReserves = MaxReserves;
     type ReserveIdentifier = [u8; 8];
+    type HoldIdentifier = [u8; 8];
+	type FreezeIdentifier = [u8; 8];
+	type MaxHolds = ();
+	type MaxFreezes = ();
 }
 
 impl Config for Runtime {
